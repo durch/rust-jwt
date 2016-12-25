@@ -9,6 +9,10 @@ keywords = ["JWT"]
 license = "MIT"
 documentation = "https://durch.github.io/rust-jwt/"
 
+[lib]
+name = "jwt"
+path = "src/lib.rs"
+
 [dependencies]
 serde = "0.8"
 serde_derive = "0.8"
