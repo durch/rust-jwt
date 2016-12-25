@@ -16,10 +16,10 @@ Generic over [serde::Serialize](https://docs.serde.rs/serde/ser/trait.Serialize.
 #[macro_use]
 extern crate serde_derive;
 extern crate serde;
-extern crate simple_jwt;
+extern crate smpl_jwt;
 
 use serde::Serialize;
-use simple_jwt::{Jwt, RSAKey};
+use smpl_jwt::{Jwt, RSAKey};
 
 fn main() {
   #[derive(Serialize)]
