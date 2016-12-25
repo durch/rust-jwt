@@ -1,13 +1,13 @@
 [package]
 name = "jwt"
-version = "0.1.0"
+version = "0.1.1"
 authors = ["Drazen Urch <github@drazenur.ch>"]
 description = "Very simple JWT generation lib."
 repository = "https://github.com/durch/rust-jwt"
 readme = "README.md"
 keywords = ["JWT"]
 license = "MIT"
-documentation = "https://durch.github.io/rust-jwt/"
+documentation = "https://durch.github.io/rust-jwt"
 
 [lib]
 name = "jwt"
