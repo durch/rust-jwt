@@ -1,6 +1,6 @@
 [![Build Status](https://travis-ci.org/durch/rust-jwt.svg?branch=master)](https://travis-ci.org/durch/rust-jwt)
 [![MIT licensed](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/durch/rust-jwt/blob/master/LICENSE)
-[![](http://meritbadge.herokuapp.com/rust-jwt)](https://crates.io/crates/rust-jwt)
+[![](http://meritbadge.herokuapp.com/smpl-jwt)](https://crates.io/crates/smpl-jwt)
 [![Join the chat at https://gitter.im/durch/rust-jwt](https://badges.gitter.im/durch/rust-jwt.svg)](https://gitter.im/durch/rust-jwt?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 ## rust-jwt [[docs](https://durch.github.io/rust-jwt)]
