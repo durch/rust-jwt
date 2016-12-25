@@ -1,5 +1,5 @@
 [package]
-name = "jwt"
+name = "simple_jwt"
 version = "0.1.1"
 authors = ["Drazen Urch <github@drazenur.ch>"]
 description = "Very simple JWT generation lib."
@@ -10,7 +10,7 @@ license = "MIT"
 documentation = "https://durch.github.io/rust-jwt"
 
 [lib]
-name = "jwt"
+name = "simple_jwt"
 path = "src/lib.rs"
 
 [dependencies]

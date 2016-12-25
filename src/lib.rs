@@ -117,10 +117,10 @@ impl<T: Serialize> fmt::Display for Jwt<T> {
 /// #[macro_use]
 /// extern crate serde_derive;
 /// extern crate serde;
-/// extern crate jwt;
+/// extern crate simple_jwt;
 ///
 /// use serde::Serialize;
-/// use jwt::{Jwt, RSAKey};
+/// use simple_jwt::{Jwt, RSAKey};
 ///
 /// fn main() {
 ///   #[derive(Serialize)]
