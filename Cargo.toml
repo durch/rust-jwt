@@ -1,6 +1,6 @@
 [package]
 name = "smpl_jwt"
-version = "0.1.1"
+version = "0.1.2"
 authors = ["Drazen Urch <github@drazenur.ch>"]
 description = "Very simple JWT generation lib."
 repository = "https://github.com/durch/rust-jwt"
