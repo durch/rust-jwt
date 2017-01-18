@@ -15,7 +15,7 @@ path = "src/lib.rs"
 
 [dependencies]
 serde = "0.8"
-serde_derive = "0.8"
+serde_derive = "0.8.20"
 serde_json = "0.8"
 rustc-serialize = "0.3"
 openssl = "^0.9"

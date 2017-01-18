@@ -1,11 +1,10 @@
-#![feature(proc_macro)]
 #![allow(dead_code)]
 
 extern crate rustc_serialize;
 extern crate serde;
-extern crate serde_json;
 #[macro_use]
 extern crate serde_derive;
+extern crate serde_json;
 extern crate openssl;
 extern crate time;
 #[macro_use]
@@ -19,7 +18,7 @@ use openssl::sign::Signer;
 use openssl::pkey::{PKey};
 use openssl::hash::MessageDigest;
 
-use serde::Serialize;
+use serde::ser::Serialize;
 
 use std::io::prelude::*;
 use std::fs::File;
@@ -98,7 +97,7 @@ pub struct Jwt<T> {
   algo: Algorithm
 }
 
-impl<T: Serialize> fmt::Display for Jwt<T> {
+impl<T: serde::ser::Serialize> fmt::Display for Jwt<T> {
   fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
     write!(f, "Jwt: \n header: {} \n body: {}, \n algorithm: {}",
            serde_json::to_string_pretty(&self.header().unwrap()).unwrap(),
