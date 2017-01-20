@@ -11,9 +11,7 @@ Generic over [serde::Serialize](https://docs.serde.rs/serde/ser/trait.Serialize.
 
 ### Usage
 
-```
-#![feature(proc_macro)]
-
+```rust
 #[macro_use]
 extern crate serde_derive;
 extern crate serde;
