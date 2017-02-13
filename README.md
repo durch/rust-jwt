@@ -6,7 +6,7 @@
 
 Very simple [JWT](https://jwt.io/) generation lib, provides a Jwt struct which can be *finalised* to produce an encoded and signed [String](https://doc.rust-lang.org/std/string/struct.String.html) representation. 
 
-Generic over [serde::Serialize](https://docs.serde.rs/serde/ser/trait.Serialize.html) trait.
+Generic over [serde::ser::Serialize](https://docs.serde.rs/serde/ser/trait.Serialize.html) trait.
 
 ### Usage
 

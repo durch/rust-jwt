@@ -111,7 +111,6 @@ impl<T: serde::ser::Serialize> fmt::Display for Jwt<T> {
 /// ### Example
 ///
 /// ```
-/// #![feature(proc_macro)]
 ///
 /// #[macro_use]
 /// extern crate serde_derive;
