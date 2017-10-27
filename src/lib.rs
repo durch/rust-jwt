@@ -16,7 +16,7 @@ use std::*;
 use std::str::FromStr;
 use rustc_serialize::base64::{ToBase64, URL_SAFE};
 use openssl::sign::Signer;
-use openssl::pkey::{PKey};
+use openssl::pkey::PKey;
 use openssl::hash::MessageDigest;
 
 use serde::ser::Serialize;
