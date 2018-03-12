@@ -7,7 +7,6 @@ extern crate serde_derive;
 extern crate serde_json;
 extern crate openssl;
 extern crate time;
-#[macro_use]
 extern crate log;
 
 pub mod error;
@@ -169,7 +168,7 @@ impl<T> Jwt<T> where
         let pkey = self.pkey.produce_key();
         let mut signer = Signer::new(self.algo.signer(), pkey)?;
         signer.update(self.input()?.as_bytes())?;
-        let signed: Vec<u8> = signer.finish()?;
+        let signed: Vec<u8> = signer.sign_to_vec()?;
         Ok(signed.to_base64(URL_SAFE))
     }
 
@@ -179,7 +178,7 @@ impl<T> Jwt<T> where
 
     pub fn new(body: T, jwt_key: RSAKey, algo: Option<Algorithm>) -> Jwt<T> {
         Jwt {
-            body: body,
+            body,
             pkey: jwt_key,
             algo: algo.unwrap_or(Algorithm::RS256)
         }
