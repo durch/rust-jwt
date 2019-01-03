@@ -1,6 +1,5 @@
 #![allow(dead_code)]
 
-extern crate rustc_serialize;
 extern crate serde;
 #[macro_use]
 extern crate serde_derive;
@@ -8,15 +7,16 @@ extern crate serde_json;
 extern crate openssl;
 extern crate time;
 extern crate log;
+extern crate base64;
 
 pub mod error;
 
 use std::*;
 use std::str::FromStr;
-use rustc_serialize::base64::{ToBase64, URL_SAFE};
 use openssl::sign::Signer;
-use openssl::pkey::PKey;
+use openssl::pkey::{PKey, Private};
 use openssl::hash::MessageDigest;
+use base64::encode_config;
 
 use serde::ser::Serialize;
 
@@ -28,7 +28,7 @@ use error::JwtErr;
 #[derive(Debug)]
 pub enum Algorithm {
     HS256,
-    RS256
+    RS256,
 }
 
 impl Algorithm {
@@ -52,7 +52,7 @@ impl fmt::Display for Algorithm {
 #[derive(Serialize, Deserialize, Debug)]
 pub struct JwtHeader {
     alg: String,
-    typ: String
+    typ: String,
 }
 
 impl fmt::Display for JwtHeader {
@@ -62,7 +62,7 @@ impl fmt::Display for JwtHeader {
 }
 
 pub struct RSAKey {
-    key: PKey
+    key: PKey<Private>
 }
 
 impl RSAKey {
@@ -70,18 +70,18 @@ impl RSAKey {
         Ok(RSAKey { key: Self::read_keyfile(filename)? })
     }
 
-    pub fn from_pkey(pkey: PKey) -> Result<Self, JwtErr> {
+    pub fn from_pkey(pkey: PKey<Private>) -> Result<Self, JwtErr> {
         Ok(RSAKey { key: pkey })
     }
 
-    fn read_keyfile(keyfile: &str) -> Result<PKey, JwtErr> {
+    fn read_keyfile(keyfile: &str) -> Result<PKey<Private>, JwtErr> {
         let mut f = File::open(keyfile)?;
         let mut buffer = Vec::new();
         let _ = f.read_to_end(&mut buffer);
         Ok(PKey::private_key_from_pem(&buffer)?)
     }
 
-    fn produce_key(&self) -> &PKey {
+    fn produce_key(&self) -> &PKey<Private> {
         &self.key
     }
 }
@@ -96,7 +96,7 @@ impl FromStr for RSAKey {
 pub struct Jwt<T> {
     body: T,
     pkey: RSAKey,
-    algo: Algorithm
+    algo: Algorithm,
 }
 
 impl<T: serde::ser::Serialize> fmt::Display for Jwt<T> {
@@ -150,11 +150,11 @@ impl<T> Jwt<T> where
     }
 
     fn encode(param: &T) -> Result<String, JwtErr> {
-        Ok(serde_json::to_string(&param)?.as_bytes().to_base64(URL_SAFE).to_owned())
+        Ok(encode_config(serde_json::to_string(&param)?.as_bytes(), base64::URL_SAFE).to_owned())
     }
 
     fn encode_header(&self) -> Result<String, JwtErr> {
-        Ok(serde_json::to_string(&self.header()?)?.as_bytes().to_base64(URL_SAFE).to_owned())
+        Ok(encode_config(serde_json::to_string(&self.header()?)?.as_bytes(), base64::URL_SAFE).to_owned())
     }
 
     fn header(&self) -> Result<JwtHeader, JwtErr> {
@@ -169,7 +169,7 @@ impl<T> Jwt<T> where
         let mut signer = Signer::new(self.algo.signer(), pkey)?;
         signer.update(self.input()?.as_bytes())?;
         let signed: Vec<u8> = signer.sign_to_vec()?;
-        Ok(signed.to_base64(URL_SAFE))
+        Ok(encode_config(&signed, base64::URL_SAFE))
     }
 
     pub fn finalize(&self) -> Result<String, JwtErr> {
@@ -180,7 +180,7 @@ impl<T> Jwt<T> where
         Jwt {
             body,
             pkey: jwt_key,
-            algo: algo.unwrap_or(Algorithm::RS256)
+            algo: algo.unwrap_or(Algorithm::RS256),
         }
     }
 }
@@ -202,5 +202,5 @@ fn test_sign() {
     let jwt = Jwt::new(TestBody { serialize: "me".to_string() },
                        rsa_key,
                        None);
-    assert_eq!(jwt.finalize().unwrap(), "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJzZXJpYWxpemUiOiJtZSJ9.nJIFpAKQWE5Mt1TQS2eDqoLVANJf809pCegB7herGYZ0Lqb1eV9MAv_Cz6lyaq87v1StC48e-U3Lp6oVezsQ-mUg5h92hFEEkzKIoJOYE6N-BEaVuy73Qf2s7c6W3ZdD0U3oR6PiEO9-FnB5bsiQlIfgzykmDUSjo2CmYpAypF9sT43by4tvSMwUwNZ_NuTI3ASPqdk5wKAkrCOJjayhyKZR7KrqeUmZdqS0Un8NSpr53Zd6SdCYTpDSGsKF_mwYV309q7zAbzRhWN-YTYsdB6Em5QoXo0ZUuNIigfprOQP1MVFvznbeonQvu6OHzJMIFhhUip8UCFNp6wzsqm4syQ");
+    assert_eq!(jwt.finalize().unwrap(), "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJzZXJpYWxpemUiOiJtZSJ9.nJIFpAKQWE5Mt1TQS2eDqoLVANJf809pCegB7herGYZ0Lqb1eV9MAv_Cz6lyaq87v1StC48e-U3Lp6oVezsQ-mUg5h92hFEEkzKIoJOYE6N-BEaVuy73Qf2s7c6W3ZdD0U3oR6PiEO9-FnB5bsiQlIfgzykmDUSjo2CmYpAypF9sT43by4tvSMwUwNZ_NuTI3ASPqdk5wKAkrCOJjayhyKZR7KrqeUmZdqS0Un8NSpr53Zd6SdCYTpDSGsKF_mwYV309q7zAbzRhWN-YTYsdB6Em5QoXo0ZUuNIigfprOQP1MVFvznbeonQvu6OHzJMIFhhUip8UCFNp6wzsqm4syQ==");
 }
