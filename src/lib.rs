@@ -1,16 +1,7 @@
-#![allow(dead_code)]
-
-extern crate serde;
 #[macro_use]
 extern crate serde_derive;
-extern crate serde_json;
-extern crate openssl;
-extern crate time;
-extern crate log;
-extern crate base64;
 
-pub mod error;
-
+use simpl::err;
 use std::*;
 use std::str::FromStr;
 use openssl::sign::Signer;
@@ -23,7 +14,12 @@ use serde::ser::Serialize;
 use std::io::prelude::*;
 use std::fs::File;
 
-use error::JwtErr;
+err!(JwtErr,
+    {
+        Json@serde_json::Error;
+        OpenSsl@openssl::error::ErrorStack;
+        Io@std::io::Error;
+    });
 
 #[derive(Debug)]
 pub enum Algorithm {
