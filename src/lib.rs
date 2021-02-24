@@ -95,6 +95,16 @@ pub struct Jwt<T> {
     algo: Algorithm,
 }
 
+impl <T> Jwt<T> {
+    pub fn body(&self) -> &T {
+        &self.body
+    }
+
+    pub fn body_mut(&mut self) -> &mut T {
+        &mut self.body
+    }
+}
+
 impl<T: serde::ser::Serialize> fmt::Display for Jwt<T> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "Jwt: \n header: {} \n body: {}, \n algorithm: {}",
