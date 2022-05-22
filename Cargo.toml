@@ -1,6 +1,6 @@
 [package]
 name = "smpl_jwt"
-version = "0.7.0"
+version = "0.7.1"
 authors = ["Drazen Urch <github@drazenur.ch>"]
 description = "Very simple JWT generation lib."
 repository = "https://github.com/durch/rust-jwt"
@@ -18,8 +18,12 @@ path = "src/lib.rs"
 serde = "^1.0"
 serde_derive = "1.0"
 serde_json = "1.0"
-openssl = "0.10"
+openssl = {version = "0.10", default-features = false}
 time = "0.3.9"
 log = "0.4"
 base64 = "0.13"
 simpl = "0.1"
+
+[features]
+default = []
+vendored = ["openssl/vendored"]
