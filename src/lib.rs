@@ -1,25 +1,25 @@
 #[macro_use]
 extern crate serde_derive;
 
-use simpl::err;
-use std::*;
-use std::str::FromStr;
-use openssl::sign::Signer;
-use openssl::pkey::{PKey, Private};
+use base64::{engine::general_purpose::URL_SAFE, Engine as _};
 use openssl::hash::MessageDigest;
-use base64::encode_config;
+use openssl::pkey::{PKey, Private};
+use openssl::sign::Signer;
+use simpl::err;
+use std::str::FromStr;
+use std::*;
 
 use serde::ser::Serialize;
 
-use std::io::prelude::*;
 use std::fs::File;
+use std::io::prelude::*;
 
 err!(JwtErr,
-    {
-        Json@serde_json::Error;
-        OpenSsl@openssl::error::ErrorStack;
-        Io@std::io::Error;
-    });
+{
+    Json@serde_json::Error;
+    OpenSsl@openssl::error::ErrorStack;
+    Io@std::io::Error;
+});
 
 #[derive(Debug)]
 pub enum Algorithm {
@@ -40,7 +40,7 @@ impl fmt::Display for Algorithm {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match *self {
             Algorithm::HS256 => write!(f, "HS256"),
-            Algorithm::RS256 => write!(f, "RS256")
+            Algorithm::RS256 => write!(f, "RS256"),
         }
     }
 }
@@ -53,17 +53,23 @@ pub struct JwtHeader {
 
 impl fmt::Display for JwtHeader {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "JwtHeader: {}", serde_json::to_string_pretty(&self).unwrap())
+        write!(
+            f,
+            "JwtHeader: {}",
+            serde_json::to_string_pretty(&self).unwrap()
+        )
     }
 }
 
 pub struct RSAKey {
-    key: PKey<Private>
+    key: PKey<Private>,
 }
 
 impl RSAKey {
     pub fn from_pem(filename: &str) -> Result<Self, JwtErr> {
-        Ok(RSAKey { key: Self::read_keyfile(filename)? })
+        Ok(RSAKey {
+            key: Self::read_keyfile(filename)?,
+        })
     }
 
     pub fn from_pkey(pkey: PKey<Private>) -> Result<Self, JwtErr> {
@@ -85,7 +91,9 @@ impl RSAKey {
 impl FromStr for RSAKey {
     type Err = JwtErr;
     fn from_str(s: &str) -> Result<Self, JwtErr> {
-        Ok(RSAKey { key: PKey::private_key_from_pem(s.as_bytes())? })
+        Ok(RSAKey {
+            key: PKey::private_key_from_pem(s.as_bytes())?,
+        })
     }
 }
 
@@ -95,7 +103,7 @@ pub struct Jwt<T> {
     algo: Algorithm,
 }
 
-impl <T> Jwt<T> {
+impl<T> Jwt<T> {
     pub fn body(&self) -> &T {
         &self.body
     }
@@ -107,10 +115,13 @@ impl <T> Jwt<T> {
 
 impl<T: serde::ser::Serialize> fmt::Display for Jwt<T> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "Jwt: \n header: {} \n body: {}, \n algorithm: {}",
-               serde_json::to_string_pretty(&self.header().unwrap()).unwrap(),
-               serde_json::to_string_pretty(&self.body).unwrap(),
-               &self.algo)
+        write!(
+            f,
+            "Jwt: \n header: {} \n body: {}, \n algorithm: {}",
+            serde_json::to_string_pretty(&self.header().unwrap()).unwrap(),
+            serde_json::to_string_pretty(&self.body).unwrap(),
+            &self.algo
+        )
     }
 }
 
@@ -147,8 +158,10 @@ impl<T: serde::ser::Serialize> fmt::Display for Jwt<T> {
 /// }
 /// ```
 
-impl<T> Jwt<T> where
-    T: Serialize {
+impl<T> Jwt<T>
+where
+    T: Serialize,
+{
     fn input(&self) -> Result<String, JwtErr> {
         let header = &self.encode_header()?;
         let body = Self::encode(&self.body)?;
@@ -156,11 +169,11 @@ impl<T> Jwt<T> where
     }
 
     fn encode(param: &T) -> Result<String, JwtErr> {
-        Ok(encode_config(serde_json::to_string(&param)?.as_bytes(), base64::URL_SAFE))
+        Ok(URL_SAFE.encode(serde_json::to_string(&param)?.as_bytes()))
     }
 
     fn encode_header(&self) -> Result<String, JwtErr> {
-        Ok(encode_config(serde_json::to_string(&self.header()?)?.as_bytes(), base64::URL_SAFE))
+        Ok(URL_SAFE.encode(serde_json::to_string(&self.header()?)?.as_bytes()))
     }
 
     fn header(&self) -> Result<JwtHeader, JwtErr> {
@@ -175,7 +188,7 @@ impl<T> Jwt<T> where
         let mut signer = Signer::new(self.algo.signer(), pkey)?;
         signer.update(self.input()?.as_bytes())?;
         let signed: Vec<u8> = signer.sign_to_vec()?;
-        Ok(encode_config(&signed, base64::URL_SAFE))
+        Ok(URL_SAFE.encode(signed))
     }
 
     pub fn finalize(&self) -> Result<String, JwtErr> {
@@ -197,16 +210,20 @@ fn test_sign() {
 
     #[derive(Serialize)]
     struct TestBody {
-        serialize: String
+        serialize: String,
     }
 
     let rsa_key = match RSAKey::from_pem("random_rsa_for_testing") {
         Ok(x) => x,
-        Err(e) => panic!("{}", e)
+        Err(e) => panic!("{}", e),
     };
 
-    let jwt = Jwt::new(TestBody { serialize: "me".to_string() },
-                       rsa_key,
-                       None);
+    let jwt = Jwt::new(
+        TestBody {
+            serialize: "me".to_string(),
+        },
+        rsa_key,
+        None,
+    );
     assert_eq!(jwt.finalize().unwrap(), "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJzZXJpYWxpemUiOiJtZSJ9.nJIFpAKQWE5Mt1TQS2eDqoLVANJf809pCegB7herGYZ0Lqb1eV9MAv_Cz6lyaq87v1StC48e-U3Lp6oVezsQ-mUg5h92hFEEkzKIoJOYE6N-BEaVuy73Qf2s7c6W3ZdD0U3oR6PiEO9-FnB5bsiQlIfgzykmDUSjo2CmYpAypF9sT43by4tvSMwUwNZ_NuTI3ASPqdk5wKAkrCOJjayhyKZR7KrqeUmZdqS0Un8NSpr53Zd6SdCYTpDSGsKF_mwYV309q7zAbzRhWN-YTYsdB6Em5QoXo0ZUuNIigfprOQP1MVFvznbeonQvu6OHzJMIFhhUip8UCFNp6wzsqm4syQ==");
 }
