@@ -157,7 +157,6 @@ impl<T: serde::ser::Serialize> fmt::Display for Jwt<T> {
 ///   println!("{}", jwt);
 /// }
 /// ```
-
 impl<T> Jwt<T>
 where
     T: Serialize,
